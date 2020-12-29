@@ -35,7 +35,7 @@ func cal() {
 		rb := produce()
 		if reflect.DeepEqual(rb[:6], excel.PrizeBall[:6]) {
 			count2++
-			fmt.Println("Second Prize!!! count->", count2)
+			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
 		}
 		if reflect.DeepEqual(rb, excel.PrizeBall) {
 			return
