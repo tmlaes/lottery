@@ -95,24 +95,20 @@ func win() {
 func writeFile(ball [7]int, file *os.File) {
 	atomic.CompareAndSwapInt64(&index, index, index+1)
 	buf := bytes.Buffer{}
-	buf.WriteString("[")
 	for _, red := range ball {
 		buf.WriteString(strconv.Itoa(red))
-		buf.WriteString(", ")
+		buf.WriteString("\t")
 	}
-	buf.Truncate(buf.Len() - 2)
-	buf.WriteString("]\n")
+	buf.WriteString("\n")
 	file.Write(buf.Bytes())
 }
 
 func save(ball [7]int, file *os.File) {
 	buf := bytes.Buffer{}
-	buf.WriteString("[")
 	for _, red := range ball {
 		buf.WriteString(strconv.Itoa(red))
-		buf.WriteString(", ")
+		buf.WriteString("\t")
 	}
-	buf.Truncate(buf.Len() - 2)
-	buf.WriteString("]\n")
+	buf.WriteString("\n")
 	file.Write(buf.Bytes())
 }
