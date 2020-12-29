@@ -20,6 +20,7 @@ const (
 
 var count int64
 var index int64
+var count2 int64
 
 func Start() {
 	fmt.Println("开始！！！")
@@ -32,6 +33,10 @@ func Start() {
 func cal() {
 	for {
 		rb := produce()
+		if reflect.DeepEqual(rb[:6], excel.PrizeBall[:6]) {
+			count2++
+			fmt.Println("Second Prize!!! count->", count2)
+		}
 		if reflect.DeepEqual(rb, excel.PrizeBall) {
 			return
 		}
@@ -70,7 +75,7 @@ func win() {
 			var radBall [7]int
 			for i := total; i > 0; i-- {
 				radBall = produce()
-				c <-radBall
+				c <- radBall
 			}
 			save(radBall, file2)
 		}()
@@ -80,7 +85,7 @@ func win() {
 		case radBall := <-c:
 			writeFile(radBall, file1)
 		default:
-			if index==5*total {
+			if index == 5*total {
 				return
 			}
 		}
@@ -95,7 +100,7 @@ func writeFile(ball [7]int, file *os.File) {
 		buf.WriteString(strconv.Itoa(red))
 		buf.WriteString(", ")
 	}
-	buf.Truncate(buf.Len()-2)
+	buf.Truncate(buf.Len() - 2)
 	buf.WriteString("]\n")
 	file.Write(buf.Bytes())
 }
@@ -107,7 +112,7 @@ func save(ball [7]int, file *os.File) {
 		buf.WriteString(strconv.Itoa(red))
 		buf.WriteString(", ")
 	}
-	buf.Truncate(buf.Len()-2)
+	buf.Truncate(buf.Len() - 2)
 	buf.WriteString("]\n")
 	file.Write(buf.Bytes())
 }
