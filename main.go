@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"lottery/ball"
+	"lottery/rball"
 	"lottery/spider"
 	"os"
 	"strconv"
@@ -18,12 +19,17 @@ const (
 )
 
 func main() {
-	limit := readCmd()
+	limit, rad := readCmd()
 	spider.Start(limit)
-	ball.Start()
+	if rad {
+		rball.Start()
+	} else {
+		ball.Start()
+	}
+
 }
 
-func readCmd() (limit int) {
+func readCmd() (limit int, rad bool) {
 	fmt.Println("请选择数目：")
 	fmt.Println("1：30个 \t 2：50个 \t 3：100个")
 	in := bufio.NewReader(os.Stdin)
@@ -41,6 +47,19 @@ func readCmd() (limit int) {
 		limit = HUNDRED
 	default:
 		limit = THIRTY
+	}
+
+	fmt.Println("是否随机：")
+	fmt.Println("1：是 \t 2：否")
+	str1, _, err1 := in.ReadLine()
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+	rd, _ := strconv.Atoi(strings.TrimSpace(string(str1)))
+	if rd == 2 {
+		rad = false
+	} else {
+		rad = true
 	}
 	return
 }
