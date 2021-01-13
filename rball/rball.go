@@ -14,22 +14,11 @@ import (
 )
 
 var (
-	count   int64
-	index   int64
-	count2  int64
-	total   int64
-	file1   *os.File
-	file2   *os.File
-	blueMap = make(map[int]int)
+	count, index, count2, total int64
+	blueMap                     = make(map[int]int)
 )
 
-func init() {
-	file1, _ = os.OpenFile("./all.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	file2, _ = os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
-}
 func Start() {
-	defer file1.Close()
-	defer file2.Close()
 	fmt.Println("开始！！！")
 	excel.Start()
 	cal()
@@ -40,7 +29,7 @@ func Start() {
 func cal() {
 	lastBalls := excel.LastBalls
 	for {
-		rb := produce(lastBalls, 0)
+		rb := produce(lastBalls)
 		if reflect.DeepEqual(rb[:6], excel.PrizeBall[:6]) {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
@@ -51,7 +40,7 @@ func cal() {
 	}
 }
 
-func produce(balls [7][]int, times int64) [7]int {
+func produce(balls [7][]int) [7]int {
 	atomic.CompareAndSwapInt64(&count, count, count+1)
 	rand.Seed(time.Now().UnixNano() + count)
 	ball := make(map[int]int)
@@ -70,31 +59,35 @@ func produce(balls [7][]int, times int64) [7]int {
 	copy(rb[:], reds)
 	j := rand.Intn(len(balls[6]))
 	rb[6] = balls[6][j]
-	if times > 0 {
-		times = times - 1
-		go writeFile(rb, file1)
-		produce(balls, times)
-	}
 	return rb
 }
 
 func win() {
+	file1, _ := os.OpenFile("./all.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	file2, _ := os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
+	defer file1.Close()
+	defer file2.Close()
+	temp := make(chan [7]int)
 	var min = count / 7
 	var max = count - min + 1
 	nextBalls := excel.NextBalls
 	for j := 0; j < 5; j++ {
-		rand.Seed(time.Now().UnixNano() + int64(j))
 		t := rand.Int63n(max) + min
 		total = total + t
 		go func(t int64) {
-			radBall := produce(nextBalls, t)
+			var radBall [7]int
+			for i := t; i > 0; i-- {
+				radBall = produce(nextBalls)
+				temp <- radBall
+			}
 			radBall = checkBlue(radBall)
 			save(radBall, file2)
 		}(t)
 	}
 	for {
-		time.Sleep(5 * time.Second)
 		select {
+		case radBall := <-temp:
+			writeFile(radBall, file1)
 		default:
 			if index == total && len(blueMap) == 5 {
 				return
@@ -105,7 +98,7 @@ func win() {
 
 func checkBlue(radBall [7]int) [7]int {
 	if blueMap[radBall[6]] != 0 {
-		radBall = produce(excel.NextBalls, 0)
+		radBall = produce(excel.NextBalls)
 		checkBlue(radBall)
 	}
 	key := radBall[6]
