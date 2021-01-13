@@ -86,7 +86,6 @@ func win() {
 		rand.Seed(time.Now().UnixNano() + int64(j))
 		t := rand.Int63n(max) + min
 		total = total + t
-		fmt.Println(total)
 		go func(t int64) {
 			radBall := produce(nextBalls, t)
 			radBall = checkBlue(radBall)
@@ -94,9 +93,10 @@ func win() {
 		}(t)
 	}
 	for {
+		time.Sleep(5 * time.Second)
 		select {
 		default:
-			if index == total {
+			if index == total && len(blueMap) == 5 {
 				return
 			}
 		}
@@ -108,7 +108,8 @@ func checkBlue(radBall [7]int) [7]int {
 		radBall = produce(excel.NextBalls, 0)
 		checkBlue(radBall)
 	}
-	blueMap[radBall[6]] = radBall[6]
+	key := radBall[6]
+	blueMap[key] = key
 	return radBall
 }
 
