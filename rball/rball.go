@@ -27,9 +27,8 @@ func Start() {
 	fmt.Println("结束！！！")
 }
 func cal() {
-	lastBalls := excel.LastBalls
 	for {
-		rb := produce(lastBalls)
+		rb := produce(excel.LastBalls)
 		if reflect.DeepEqual(rb[:6], excel.PrizeBall[:6]) {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
@@ -75,7 +74,6 @@ func win() {
 	var min = count / 7
 	var max = count - min + 1
 	count = 0
-	nextBalls := excel.NextBalls
 	for j := 0; j < 5; j++ {
 		rand.Seed(time.Now().UnixNano() + int64(j))
 		t := rand.Int63n(max) + min
@@ -83,7 +81,7 @@ func win() {
 		go func(t int64) {
 			var radBall [7]int
 			for i := t; i > 0; i-- {
-				radBall = produce(nextBalls)
+				radBall = produce(excel.NextBalls)
 				temp <- radBall
 			}
 			radBall = checkBlue(radBall)
