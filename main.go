@@ -26,7 +26,6 @@ func main() {
 	} else {
 		ball.Start()
 	}
-
 }
 
 func readCmd() (limit int, rad bool) {

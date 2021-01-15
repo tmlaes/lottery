@@ -40,15 +40,16 @@ func cal() {
 	}
 }
 
-func produce(balls [7][]int) [7]int {
-	atomic.CompareAndSwapInt64(&count, count, count+1)
-	rand.Seed(time.Now().UnixNano() + count)
+func produce(balls [7][2]int) [7]int {
 	ball := make(map[int]int)
 	var rb [7]int
 	var reds []int
 	for i := 0; len(ball) < 6; {
-		j := rand.Intn(len(balls[i]))
-		r := balls[i][j]
+		atomic.CompareAndSwapInt64(&count, count, count+1)
+		rand.Seed(time.Now().UnixNano() + count)
+		min := balls[i][0]
+		max := balls[i][1]
+		r := rand.Intn(max-min+1) + min
 		if ball[r] == 0 {
 			ball[r] = r
 			reds = append(reds, r)
@@ -57,8 +58,11 @@ func produce(balls [7][]int) [7]int {
 	}
 	sort.Ints(reds)
 	copy(rb[:], reds)
-	j := rand.Intn(len(balls[6]))
-	rb[6] = balls[6][j]
+	atomic.CompareAndSwapInt64(&count, count, count+1)
+	rand.Seed(time.Now().UnixNano() + count)
+	min := balls[6][0]
+	max := balls[6][1]
+	rb[6] = rand.Intn(max-min+1) + min
 	return rb
 }
 
@@ -70,8 +74,10 @@ func win() {
 	temp := make(chan [7]int)
 	var min = count / 7
 	var max = count - min + 1
+	count = 0
 	nextBalls := excel.NextBalls
 	for j := 0; j < 5; j++ {
+		rand.Seed(time.Now().UnixNano() + int64(j))
 		t := rand.Int63n(max) + min
 		total = total + t
 		go func(t int64) {
@@ -84,6 +90,7 @@ func win() {
 			save(radBall, file2)
 		}(t)
 	}
+
 	for {
 		select {
 		case radBall := <-temp:

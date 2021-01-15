@@ -3,6 +3,7 @@ package excel
 import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"log"
+	"sort"
 	"strconv"
 )
 
@@ -12,8 +13,8 @@ const (
 
 var (
 	PrizeBall [7]int
-	LastBalls [7][]int
-	NextBalls [7][]int
+	LastBalls [7][2]int
+	NextBalls [7][2]int
 )
 
 func Start() {
@@ -41,21 +42,33 @@ func readPrize(excel *excelize.File) {
 }
 
 func readLast(excel *excelize.File) {
+	var balls [7][]int
 	rows := excel.GetRows("Sheet1")
 	for _, row := range rows {
 		for i, e := range row {
 			b, _ := strconv.Atoi(e)
-			LastBalls[i] = append(LastBalls[i], b)
+			balls[i] = append(balls[i], b)
 		}
+	}
+	for i, ball := range balls {
+		sort.Ints(ball)
+		LastBalls[i][0] = ball[0]
+		LastBalls[i][1] = ball[len(ball)-1]
 	}
 }
 
 func readNext(excel *excelize.File) {
+	var balls [7][]int
 	rows := excel.GetRows("Sheet3")
 	for _, row := range rows {
 		for i, e := range row {
 			b, _ := strconv.Atoi(e)
-			NextBalls[i] = append(NextBalls[i], b)
+			balls[i] = append(balls[i], b)
 		}
+	}
+	for i, ball := range balls {
+		sort.Ints(ball)
+		NextBalls[i][0] = ball[0]
+		NextBalls[i][1] = ball[len(ball)-1]
 	}
 }
