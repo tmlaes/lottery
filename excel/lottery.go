@@ -1,6 +1,7 @@
 package excel
 
 import (
+	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"log"
 	"sort"
@@ -25,6 +26,8 @@ func Start() {
 	readLast(excel)
 	readPrize(excel)
 	readNext(excel)
+	fmt.Println(LastBalls)
+	fmt.Println(NextBalls)
 }
 
 /**
