@@ -29,6 +29,7 @@ func Start() {
 func cal() {
 	for {
 		rb := produce(excel.LastBalls)
+		count = count + 1
 		if reflect.DeepEqual(rb[:6], excel.PrizeBall[:6]) {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
@@ -43,9 +44,10 @@ func produce(balls [7][2]int) [7]int {
 	ball := make(map[int]int)
 	var rb [7]int
 	var reds []int
+	var tc int64
 	for i := 0; len(ball) < 6; {
-		atomic.CompareAndSwapInt64(&count, count, count+1)
-		rand.Seed(time.Now().UnixNano() + count)
+		tc++
+		rand.Seed(time.Now().UnixNano() + tc)
 		min := balls[i][0]
 		max := balls[i][1]
 		r := rand.Intn(max-min+1) + min
@@ -57,8 +59,8 @@ func produce(balls [7][2]int) [7]int {
 	}
 	sort.Ints(reds)
 	copy(rb[:], reds)
-	atomic.CompareAndSwapInt64(&count, count, count+1)
-	rand.Seed(time.Now().UnixNano() + count)
+	tc++
+	rand.Seed(time.Now().UnixNano() + tc)
 	min := balls[6][0]
 	max := balls[6][1]
 	rb[6] = rand.Intn(max-min+1) + min
