@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const MAX = 1 << 27
+
 var (
 	count, index, count2, total int64
 	blueMap                     = make(map[int]int)
@@ -21,6 +23,7 @@ var (
 
 func Start() {
 	fmt.Println("开始！！！")
+
 	excel.Start()
 	cal()
 	fmt.Println("遍历完结！ count -> ", count)
@@ -35,7 +38,7 @@ func cal() {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
 		}
-		if reflect.DeepEqual(rb, excel.PrizeBall) {
+		if reflect.DeepEqual(rb, excel.PrizeBall) || count >= MAX {
 			return
 		}
 	}
