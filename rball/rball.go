@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+const MIN = 1 << 24
 const MAX = 1 << 27
 
 var (
@@ -30,6 +31,7 @@ func Start() {
 	win()
 	fmt.Println("结束！！！")
 }
+
 func cal() {
 	for {
 		rb := produce(excel.LastBalls)
@@ -38,7 +40,11 @@ func cal() {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
 		}
-		if reflect.DeepEqual(rb, excel.PrizeBall) || count >= MAX {
+		if reflect.DeepEqual(rb, excel.PrizeBall) {
+			return
+		}
+		if count >= MAX {
+			count = MIN
 			return
 		}
 	}
