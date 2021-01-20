@@ -2,9 +2,10 @@ package rball
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"lottery/excel"
-	"math/rand"
+	"math/big"
 	"os"
 	"reflect"
 	"sort"
@@ -41,29 +42,24 @@ func cal() {
 }
 
 func produce(balls [7][2]int) [7]int {
-	ball := make(map[int]int)
+	ball := make(map[int]int, 6)
 	var rb [7]int
-	var reds []int
-	var tc int64
-	for i := 0; len(ball) < 6; {
-		tc++
-		rand.Seed(time.Now().UnixNano() + tc)
+	for i := 0; i < 6; {
 		min := balls[i][0]
-		max := balls[i][1]
-		r := rand.Intn(max-min+1) + min
+		max := balls[i][1] - balls[i][0] + 1
+		rad, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
+		r := int(rad.Int64()) + min
 		if ball[r] == 0 {
 			ball[r] = r
-			reds = append(reds, r)
+			rb[i] = r
 			i++
 		}
 	}
-	sort.Ints(reds)
-	copy(rb[:], reds)
-	tc++
-	rand.Seed(time.Now().UnixNano() + tc)
+	sort.Ints(rb[:6])
 	min := balls[6][0]
-	max := balls[6][1]
-	rb[6] = rand.Intn(max-min+1) + min
+	max := balls[6][1] - balls[6][0] + 1
+	rad, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	rb[6] = int(rad.Int64()) + min
 	return rb
 }
 
@@ -72,13 +68,15 @@ func win() {
 	file2, _ := os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
 	defer file1.Close()
 	defer file2.Close()
+
+	ticker := time.NewTicker(1 * time.Second)
 	temp := make(chan [7]int)
 	var min = count / 7
 	var max = count - min + 1
 	count = 0
 	for j := 0; j < 5; j++ {
-		rand.Seed(time.Now().UnixNano() + int64(j))
-		t := rand.Int63n(max) + min
+		rad, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
+		t := rad.Int64() + min
 		total = total + t
 		go func(t int64) {
 			var radBall [7]int
@@ -95,7 +93,7 @@ func win() {
 		select {
 		case radBall := <-temp:
 			writeFile(radBall, file1)
-		default:
+		case <-ticker.C:
 			if index == total && len(blueMap) == 5 {
 				return
 			}
