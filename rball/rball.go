@@ -1,30 +1,29 @@
 package rball
 
 import (
-	"bytes"
+	"bufio"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"lottery/excel"
 	"math/big"
 	"os"
 	"reflect"
 	"sort"
-	"strconv"
-	"sync/atomic"
-	"time"
 )
 
-const MIN = 1 << 24
-const MAX = 1 << 27
+const (
+	MIN = 1 << 24
+	MAX = 1 << 27
+)
 
 var (
-	count, index, count2, total int64
-	blueMap                     = make(map[int]int)
+	count, count2 int64
+	blueMap       = make(map[int]int)
 )
 
 func Start() {
 	fmt.Println("开始！！！")
-
 	excel.Start()
 	cal()
 	fmt.Println("遍历完结！ count -> ", count)
@@ -73,41 +72,33 @@ func produce(balls [7][2]int) [7]int {
 }
 
 func win() {
-	file1, _ := os.OpenFile("./all.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	file2, _ := os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
-	defer file1.Close()
-	defer file2.Close()
-
-	ticker := time.NewTicker(1 * time.Second)
-	temp := make(chan [7]int)
 	var min = count / 7
 	var max = count - min + 1
-	count = 0
+	file1, _ := os.OpenFile("./all.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	file2, _ := os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
+	bufWriter1 := bufio.NewWriterSize(file1, 1<<20)
+	bufWriter2 := bufio.NewWriterSize(file2, 1<<10)
+	defer file1.Close()
+	defer file2.Close()
 	for j := 0; j < 5; j++ {
 		rad, _ := rand.Int(rand.Reader, big.NewInt(int64(max)))
 		t := rad.Int64() + min
-		total = total + t
-		go func(t int64) {
-			var radBall [7]int
-			for i := t; i > 0; i-- {
-				radBall = produce(excel.NextBalls)
-				temp <- radBall
-			}
-			radBall = checkBlue(radBall)
-			save(radBall, file2)
-		}(t)
-	}
-
-	for {
-		select {
-		case radBall := <-temp:
-			writeFile(radBall, file1)
-		case <-ticker.C:
-			if index == total && len(blueMap) == 5 {
-				return
-			}
+		var radBall [7]int
+		for i := t; i > 0; i-- {
+			radBall = produce(excel.NextBalls)
+			s, _ := json.Marshal(radBall)
+			bufWriter1.Write(s)
+			bufWriter1.WriteString("\n")
 		}
+		radBall = checkBlue(radBall)
+		s, _ := json.Marshal(radBall)
+		bufWriter1.Write(s)
+		bufWriter1.WriteString("\n")
+		bufWriter2.Write(s)
+		bufWriter2.WriteString("\n")
 	}
+	bufWriter1.Flush()
+	bufWriter2.Flush()
 }
 
 func checkBlue(radBall [7]int) [7]int {
@@ -118,25 +109,4 @@ func checkBlue(radBall [7]int) [7]int {
 	key := radBall[6]
 	blueMap[key] = key
 	return radBall
-}
-
-func writeFile(ball [7]int, file *os.File) {
-	atomic.CompareAndSwapInt64(&index, index, index+1)
-	buf := bytes.Buffer{}
-	for _, red := range ball {
-		buf.WriteString(strconv.Itoa(red))
-		buf.WriteString("\t")
-	}
-	buf.WriteString("\n")
-	file.Write(buf.Bytes())
-}
-
-func save(ball [7]int, file *os.File) {
-	buf := bytes.Buffer{}
-	for _, red := range ball {
-		buf.WriteString(strconv.Itoa(red))
-		buf.WriteString("\t")
-	}
-	buf.WriteString("\n")
-	file.Write(buf.Bytes())
 }
