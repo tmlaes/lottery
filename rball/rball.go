@@ -12,10 +12,7 @@ import (
 	"sort"
 )
 
-const (
-	MIN = 1 << 24
-	MAX = 1 << 27
-)
+const MAX = 1 << 27
 
 var (
 	count, count2 int64
@@ -39,11 +36,7 @@ func cal() {
 			count2++
 			fmt.Println("Second Prize!!! count->", count2, "	total ->", count)
 		}
-		if reflect.DeepEqual(rb, excel.PrizeBall) {
-			return
-		}
-		if count >= MAX {
-			count = MIN
+		if reflect.DeepEqual(rb, excel.PrizeBall) || count >= MAX {
 			return
 		}
 	}
@@ -76,8 +69,8 @@ func win() {
 	var max = count - min + 1
 	file1, _ := os.OpenFile("./all.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	file2, _ := os.OpenFile("./ball.txt", os.O_WRONLY|os.O_CREATE, 0666)
-	bufWriter1 := bufio.NewWriterSize(file1, 1<<20)
-	bufWriter2 := bufio.NewWriterSize(file2, 1<<10)
+	bufWriter1 := bufio.NewWriterSize(file1, 8192)
+	bufWriter2 := bufio.NewWriterSize(file2, 4096)
 	defer file1.Close()
 	defer file2.Close()
 	for j := 0; j < 5; j++ {
