@@ -14,6 +14,7 @@ import (
 
 var (
 	count, count2 int64
+	blueMap       = make(map[int]int)
 )
 
 func Start() {
@@ -49,7 +50,8 @@ func predict() {
 		for i := rad.Int64(); i > 0; i-- {
 			rb = radNew()
 		}
-		ballStr, _ := json.Marshal(rb)
+		nrb := checkBlue(rb)
+		ballStr, _ := json.Marshal(nrb)
 		bufWriter2.Write(ballStr)
 		bufWriter2.WriteString("\n")
 	}
@@ -94,4 +96,16 @@ func new(ba map[int]int, index int) int {
 		i++
 	}
 	return i
+}
+
+func checkBlue(radBall [7]int) [7]int {
+	if blueMap[radBall[6]] == 0 {
+		return radBall
+	}
+	for {
+		newRadBall := radNew()
+		if blueMap[newRadBall[6]] == 0 {
+			return newRadBall
+		}
+	}
 }
