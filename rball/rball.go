@@ -20,7 +20,7 @@ var (
 )
 
 func Start() {
-	fmt.Println("开始！！！")
+	fmt.Println("概率随机开始！！！")
 	excel.Start()
 	cal()
 	fmt.Println("遍历完结！ count -> ", count)
