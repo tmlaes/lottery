@@ -12,7 +12,7 @@ import (
 	"sort"
 )
 
-const MAX = 1 << 25
+const MAX = 1 << 26
 
 var (
 	count, count2 int64
